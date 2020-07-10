@@ -1,0 +1,27 @@
+{
+  "name": "bothesda",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RenatoFernandesTotti/BOThesda.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RenatoFernandesTotti/BOThesda/issues"
+  },
+  "homepage": "https://github.com/RenatoFernandesTotti/BOThesda#readme",
+  "dependencies": {
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0",
+    "ffmpeg-static": "^4.2.5",
+    "opusscript": "0.0.7",
+    "ytdl-core": "^3.1.2",
+    "ytsr": "^0.1.15"
+  }
+}

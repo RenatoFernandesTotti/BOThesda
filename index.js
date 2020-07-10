@@ -1,14 +1,12 @@
 const Discord = require('discord.js');
-const bot = new Discord.Client();
+global.bot = new Discord.Client();
 const commands = require('./commands')
-let prefix = "&&"
+const say = require('./lib/sendMessage')
+
+let prefix = "#"
 require('dotenv').config()
 
-global.songQueue={
-  songs:[],
-  voiceChannel:null,
-  voiceCon:null
-}
+
 
 
 bot.commands = new Discord.Collection();
@@ -21,21 +19,25 @@ Object.keys(commands).map(key => {
 
 bot.on('ready', () => {
   console.log(`Logged in as ${bot.user.tag}!`);
-  //bot.commands.get(command).execute('play',args)
 });
 
 bot.on('message', msg => {
   if (msg.author.bot) return;
   if (!msg.content.startsWith(prefix)) return;
   let args = msg.content.replace(prefix,"").split(/ +/)
-  let command = args.shift()
+  let command = args.shift().toLowerCase()
 
-  console.log(args);
   try {
     bot.commands.get(command).execute(msg,args)
   } catch (error) {
-    
+    say({
+      title:"Command not found",
+      channel:msg.channel,
+      color:'info'
+    })
   }
 });
+
+
 
 bot.login(process.env.AUTH_TOKEN);

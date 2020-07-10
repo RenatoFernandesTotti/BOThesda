@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const bot = new Discord.Client();
 const commands = require('./commands')
-let prefix = "&"
+let prefix = "&&"
 require('dotenv').config()
 
 global.songQueue={
@@ -31,7 +31,11 @@ bot.on('message', msg => {
   let command = args.shift()
 
   console.log(args);
-  bot.commands.get(command).execute(msg,args)
+  try {
+    bot.commands.get(command).execute(msg,args)
+  } catch (error) {
+    
+  }
 });
 
 bot.login(process.env.AUTH_TOKEN);

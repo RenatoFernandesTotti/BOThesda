@@ -1,25 +1,37 @@
-const { MessageEmbed } = require('discord.js');
+
 const ytdl = require('ytdl-core');
+const say =require('./sendMessage')
+
 
 function playAudio(url) {
     global.songQueue.voiceCon.play(ytdl(url, { filter: 'audioonly' }))
         .on('finish', () => {
             global.songQueue.voiceChannel.leave()
-            global.songQueue.voiceChannel=null
+            global.songQueue.voiceChannel = null
         })
+        .on('error',()=>{
+
+        })
+}
+
+function stopAudio() {
+    global.songQueue.voiceCon.dispatcher.end()
 }
 
 exports.play = {
     name: 'play',
     description: 'Play music',
     execute: async function (msg, args) {
-        const embed = new MessageEmbed()
+        
         const voiceChannel = msg.member.voice.channel
         const song = args.join(' ')
         if (!voiceChannel) {
-            embed.setTitle(`You must be in a voice channel ${msg.member.displayName}`)
-                .setColor('#a83232')
-            let reponse = await msg.channel.send(embed);
+            let reponse=await say({
+                title:`You must be in a voice channel ${msg.member.displayName}`,
+                color:'#a83232',
+                channel:msg.channel
+            })
+
             reponse.react('😖')
             return
         }
@@ -33,5 +45,13 @@ exports.play = {
         }
         playAudio(song)
 
+    }
+}
+
+exports.stop = {
+    name: 'stop',
+    description: 'Stop music',
+    execute: async function (msg, args) {
+        stopAudio()
     }
 }

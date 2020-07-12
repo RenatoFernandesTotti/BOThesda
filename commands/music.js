@@ -2,7 +2,7 @@
 const ytdl = require('ytdl-core')
 const say = require('../lib/sendMessage')
 const ytsr = require('ytsr')
-const guilds = new Map()
+
 
 bot.on('voiceStateUpdate', (oldP, newP) => {
     let guild = guilds.get(newP.guild.id)
@@ -181,6 +181,12 @@ exports.stop = {
     description: 'Stop all music',
     execute: async function (msg, args) {
         let guild = guilds.get(msg.guild.id)
+
+        if(guild.songs.length === 0){
+            await say({
+                channel:guild.textChannel
+            })
+        }
         guild.songs = []
         stopAudio(guild)
     }

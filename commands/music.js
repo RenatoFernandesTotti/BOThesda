@@ -181,6 +181,14 @@ exports.stop = {
     description: 'Stop all music',
     execute: async function (msg, args) {
         let guild = guilds.get(msg.guild.id)
+        if (!guild || !guild.isPlaying) {
+            say({
+                channel: msg.channel,
+                title: "Error",
+                message: "No Songs to stop"
+            })
+            return
+        }
         guild.songs = []
         stopAudio(guild)
     }
@@ -191,6 +199,14 @@ exports.skip = {
     description: 'Skip one music',
     execute: async function (msg, args) {
         let guild = guilds.get(msg.guild.id)
+        if (!guild || !guild.isPlaying) {
+            say({
+                channel: msg.channel,
+                title: "Error",
+                message: "No Songs to skip"
+            })
+            return
+        }
         stopAudio(guild)
     }
 }

@@ -65,7 +65,7 @@ exports.play = {
 
             //if bot not in a voice channel then join
             if (!guild.voiceChannel) {
-                guild.contract(msg)
+                await guild.contract(msg)
             }
             else if (guild.voiceChannel !== msg.member.voice.channel) {
                 guild.say(

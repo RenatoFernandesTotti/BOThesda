@@ -1,9 +1,9 @@
 const Discord = require('discord.js');
+global.guilds=new Map()
+global.bot = new Discord.Client();
 const commands = require('./commands')
 const sendMessage = require('./lib/sendMessage')
 
-global.guilds=new Map()
-global.bot = new Discord.Client();
 
 require('dotenv').config()
 let prefix = process.env.PREFIX

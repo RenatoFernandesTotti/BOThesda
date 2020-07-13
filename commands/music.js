@@ -1,5 +1,4 @@
 
-
 const Guild = require('../lib/guild')
 
 

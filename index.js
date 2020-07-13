@@ -1,7 +1,10 @@
+
 const Discord = require('discord.js');
+global.guilds=new Map()
 global.bot = new Discord.Client();
 const commands = require('./commands')
-const say = require('./lib/sendMessage')
+const sendMessage = require('./lib/sendMessage')
+
 
 require('dotenv').config()
 let prefix = process.env.PREFIX
@@ -36,8 +39,9 @@ bot.on('message', msg => {
   try {
     bot.commands.get(command).execute(msg, args)
   } catch (error) {
-    say({
+    sendMessage({
       title: "Command not found",
+      message:`Please type ${prefix}help to see available commands`,
       channel: msg.channel,
       color: 'info'
     })

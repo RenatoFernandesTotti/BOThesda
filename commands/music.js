@@ -14,6 +14,13 @@ bot.on('voiceStateUpdate', (oldP, newP) => {
         guild.members++
     }
     if (guild.members === 1) {
+        guild.say(
+            {
+                title: `I was alone so I cleared the queue and left the channel`,
+                color: 'info',
+            }
+        )
+        guild.songs = []
         guild.stopAudio()
     }
 })
@@ -133,19 +140,19 @@ exports.queue = {
             return
         }
 
-        let message = 
-        `Playing: **${guild.songPlaying.title}**\n`
+        let message =
+            `Playing: **${guild.songPlaying.title}**\n`
 
-        if(guild.songs.length!==0){
+        if (guild.songs.length !== 0) {
             let limit = (guild.songs.length <= 10) ? guild.songs.length : 10
             for (let index = 0; index < limit; index++) {
-                message+=`${index+1}: ${guild.songs[index].title}\n`
+                message += `${index + 1}: ${guild.songs[index].title}\n`
             }
         }
         guild.say({
-            title : "Queue 🎧",
-            color : 'info',
-            message : message
+            title: "Queue 🎧",
+            color: 'info',
+            message: message
         })
     }
 }

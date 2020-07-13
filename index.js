@@ -1,3 +1,4 @@
+
 const Discord = require('discord.js');
 global.guilds=new Map()
 global.bot = new Discord.Client();
@@ -40,6 +41,7 @@ bot.on('message', msg => {
   } catch (error) {
     sendMessage({
       title: "Command not found",
+      message:`Please type ${prefix}help to see available commands`,
       channel: msg.channel,
       color: 'info'
     })

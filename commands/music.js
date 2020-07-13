@@ -1,6 +1,5 @@
 
-const ytdl = require('ytdl-core')
-const ytsr = require('ytsr')
+
 const Guild = require('../lib/guild')
 
 
@@ -26,9 +25,7 @@ exports.play = {
     execute: async function (msg, args) {
         let guild
         try {
-            const voiceChannel = ""
             let song = args.join(' ')
-            let metaData = {}
 
             //No args
             if (song === "") {
@@ -64,54 +61,18 @@ exports.play = {
             if (!guild.voiceChannel) {
                 guild.contract(msg)
             }
-            else if (guild.voiceChannel !== voiceChannel) {
-                Guild.say(
+            else if (guild.voiceChannel !== msg.member.voice.channel) {
+                guild.say(
                     {
-                        channel: guild.textChannel,
                         title: `I'm already in a voice channel`,
                         color: 'warning'
                     }
                 )
-            }
-            //If song was URL playit directly and get the video title, if not,
-            //search for it and get the metadata
-            if (ytdl.validateURL(song)) {
-                metaData.title = (await ytdl.getBasicInfo(song)).videoDetails.title
-                metaData.link = song
-            } else {
 
-                song = await ytsr(song)
-                if (song.items.length === 0) {
-                    await Guildsay({
-                        color: "error",
-                        title: "Error ",
-                        message: "I didn't find any songs",
-                        channel: guild.textChannel
-                    })
-                    if (!guild.isPlaying) {
-                        guild.voiceChannel.leave()
-                    }
-                    return
-                }
-                metaData.title = song.items[0].title
-                metaData.link = song.items[0].link
-
+                return
             }
 
-            if (!guild.isPlaying) {
-                guild.playAudio(metaData.link, metaData.title, guild)
-            } else {
-                await Guild.say(
-                    {
-                        channel: guild.textChannel,
-                        title: `Queued`,
-                        message: metaData.title,
-                        color: 'sucess'
-                    }
-                )
-
-                guild.songs.push({ name: metaData.title, link: metaData.link })
-            }
+            guild.play(song)
         } catch (error) {
             await Guild.say({
                 title: "Major error",

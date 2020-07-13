@@ -1,8 +1,6 @@
 
-const ytdl = require('ytdl-core')
-const say = require('../lib/sendMessage')
-const ytsr = require('ytsr')
-const guilds = new Map()
+const Guild = require('../lib/guild')
+
 
 bot.on('voiceStateUpdate', (oldP, newP) => {
     let guild = guilds.get(newP.guild.id)
@@ -15,47 +13,17 @@ bot.on('voiceStateUpdate', (oldP, newP) => {
         guild.members++
     }
     if (guild.members === 1) {
-        stopAudio(guild)
+        guild.say(
+            {
+                title: `I was alone so I cleared the queue and left the channel`,
+                color: 'info',
+            }
+        )
+        guild.songs = []
+        guild.stopAudio()
     }
 })
 
-
-
-async function playAudio(url, name, guild) {
-    guild.isPlaying = true
-
-    await say(
-        {
-            channel: guild.textChannel,
-            title: `Playing`,
-            message: name,
-            color: 'sucess'
-        }
-    )
-
-    guild.voiceCon.play(ytdl(url, { filter: 'audioonly' }))
-        .on('finish', () => {
-            if (guild.songs.length !== 0) {
-                let info = guild.songs.shift()
-                playAudio(info.link, info.name, guild)
-                return
-            }
-            guild.voiceChannel.leave()
-            guild.voiceChannel = null
-            guild.isPlaying = false
-        })
-        .on('error', () => {
-            say({
-                title: "An error has ocurred",
-                color: "error",
-                channel: guild.textChannel
-            })
-        })
-}
-
-function stopAudio(guild) {
-    guild.voiceCon.dispatcher.end()
-}
 
 exports.play = {
     name: 'play',
@@ -63,14 +31,11 @@ exports.play = {
     execute: async function (msg, args) {
         let guild
         try {
-            const voiceChannel = msg.member.voice.channel
-            const textChannel = msg.channel
             let song = args.join(' ')
-            let metaData = {}
 
             //No args
             if (song === "") {
-                await say({
+                await Guild.say({
                     title: `No song provided`,
                     color: 'warning',
                     channel: msg.channel
@@ -79,8 +44,8 @@ exports.play = {
             }
 
             //User was not in a voice channel
-            if (!voiceChannel) {
-                let reponse = await say({
+            if (!msg.member.voice.channel) {
+                let reponse = await Guild.say({
                     title: `You must be in a voice channel ${msg.member.displayName}`,
                     color: '#a83232',
                     channel: msg.channel
@@ -88,83 +53,35 @@ exports.play = {
                 reponse.react('😖')
                 return
             }
+
             //try to get guild contract
             guild = guilds.get(msg.guild.id)
-
             //if no guild was found create new contract
             if (!guild) {
-                guilds.set(msg.guild.id, {
-                    songs: [],
-                    voiceChannel: null,
-                    textChannel: null,
-                    voiceCon: null,
-                    isPlaying: false,
-                    members: 0
-                })
-
+                guilds.set(msg.guild.id, new Guild())
                 guild = guilds.get(msg.guild.id)
             }
 
 
             //if bot not in a voice channel then join
             if (!guild.voiceChannel) {
-                guild.voiceCon = await voiceChannel.join()
-                guild.voiceChannel = voiceChannel
-                guild.textChannel = msg.channel
-                guild.members = guild.voiceChannel.members.size
+                guild.contract(msg)
             }
-            else if (guild.voiceChannel !== voiceChannel) {
-                say(
+            else if (guild.voiceChannel !== msg.member.voice.channel) {
+                guild.say(
                     {
-                        channel: guild.textChannel,
                         title: `I'm already in a voice channel`,
                         color: 'warning'
                     }
                 )
-            }
-            //If song was URL playit directly and get the video title, if not,
-            //search for it and get the metadata
-            if (ytdl.validateURL(song)) {
-                metaData.title = (await ytdl.getBasicInfo(song)).videoDetails.title
-                metaData.link = song
-            } else {
 
-                song = await ytsr(song)
-                if (song.items.length === 0) {
-                    await say({
-                        color: "error",
-                        title: "Error ",
-                        message: "I didn't find any songs",
-                        channel: guild.textChannel
-                    })
-                    if (!guild.isPlaying) {
-                        guild.voiceChannel.leave()
-                    }
-                    return
-                }
-                metaData.title = song.items[0].title
-                metaData.link = song.items[0].link
-
+                return
             }
 
-            if (!guild.isPlaying) {
-
-                playAudio(metaData.link, metaData.title, guild)
-            } else {
-                await say(
-                    {
-                        channel: guild.textChannel,
-                        title: `Queued`,
-                        message: metaData.title,
-                        color: 'sucess'
-                    }
-                )
-
-                guild.songs.push({ name: metaData.title, link: metaData.link })
-            }
+            guild.play(song)
         } catch (error) {
-            await say({
-                title: "Major error",
+            await Guild.say({
+                title: "Error",
                 message: error,
                 channel: guild.textChannel
             })
@@ -182,15 +99,14 @@ exports.stop = {
     execute: async function (msg, args) {
         let guild = guilds.get(msg.guild.id)
         if (!guild || !guild.isPlaying) {
-            say({
+            Guild.say({
                 channel: msg.channel,
-                title: "Error",
                 message: "No Songs to stop"
             })
             return
         }
         guild.songs = []
-        stopAudio(guild)
+        guild.stopAudio()
     }
 }
 
@@ -200,13 +116,42 @@ exports.skip = {
     execute: async function (msg, args) {
         let guild = guilds.get(msg.guild.id)
         if (!guild || !guild.isPlaying) {
-            say({
+            Guild.say({
                 channel: msg.channel,
-                title: "Error",
                 message: "No Songs to skip"
             })
             return
         }
-        stopAudio(guild)
+        guild.stopAudio()
+    }
+}
+
+exports.queue = {
+    name: 'queue',
+    description: 'See next 10 queued music',
+    execute: async function (msg, args) {
+        let guild = guilds.get(msg.guild.id)
+        if (!guild || !guild.isPlaying) {
+            Guild.say({
+                channel: msg.channel,
+                message: "No Songs to show 🙁"
+            })
+            return
+        }
+
+        let message =
+            `Playing: **${guild.songPlaying.title}**\n`
+
+        if (guild.songs.length !== 0) {
+            let limit = (guild.songs.length <= 10) ? guild.songs.length : 10
+            for (let index = 0; index < limit; index++) {
+                message += `${index + 1}: ${guild.songs[index].title}\n`
+            }
+        }
+        guild.say({
+            title: "Queue 🎧",
+            color: 'info',
+            message: message
+        })
     }
 }

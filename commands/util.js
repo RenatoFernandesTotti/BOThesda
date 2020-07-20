@@ -1,4 +1,4 @@
-const say = require('../lib/sendMessage')
+const say = require('../lib/sendEmbedMessage')
 exports.help = {
     name: 'help',
     description: 'Show this message',

@@ -1,5 +1,5 @@
 const axios = require('axios')
-const Guild = require('../lib/guild')
+const Guild = require('../classes/guild')
 
 exports.copyPasta = {
     name: 'copypasta',

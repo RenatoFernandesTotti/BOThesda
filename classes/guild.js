@@ -36,10 +36,20 @@ module.exports = class Guild {
     }
 
     async contract(msg) {
-        this.voiceChannel = msg.member.voice.channel
-        this.voiceCon = await this.voiceChannel.join()
-        this.textChannel = msg.channel
-        this.members = this.voiceChannel.members.size
+        try{
+            this.voiceChannel = msg.member.voice.channel
+            this.voiceCon = await this.voiceChannel.join()
+            this.textChannel = msg.channel
+            this.members = this.voiceChannel.members.size
+        }
+        catch(error){
+            await Guild.say({
+                channel:msg.channel,
+                title:'An error has occured',
+                message:"Trying to connect again"
+            })
+            this.contract(msg)
+        }
     }
 
 
@@ -114,7 +124,6 @@ module.exports = class Guild {
                 say({
                     title: "An error has ocurred",
                     color: "error",
-                    channel: this.textChannel
                 })
             })
     }

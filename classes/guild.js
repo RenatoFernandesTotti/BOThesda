@@ -109,8 +109,8 @@ module.exports = class Guild {
             .on('finish', () => {
                 if (this.songs.length !== 0) {
                     let info = this.songs.shift()
-                    this.songPlaying=info
-                    this.voiceChannel=null
+                    this.songPlaying=info                    
+
                     this.playAudio(info.link, info.title)
                     return
                 }
@@ -119,6 +119,7 @@ module.exports = class Guild {
                     message:"Finished playing all songs 💽"
                 })
                 this.voiceChannel.leave()
+                this.voiceChannel=null
                 this.isPlaying = false
             })
             .on('error', (error) => {

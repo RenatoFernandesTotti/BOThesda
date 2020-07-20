@@ -110,6 +110,7 @@ module.exports = class Guild {
                 if (this.songs.length !== 0) {
                     let info = this.songs.shift()
                     this.songPlaying=info
+                    this.voiceChannel=null
                     this.playAudio(info.link, info.title)
                     return
                 }

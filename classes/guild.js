@@ -1,4 +1,4 @@
-const send = require('../lib/sendMessage');
+const send = require('../lib/sendEmbedMessage');
 const ytdl = require('ytdl-core')
 const ytsr = require('ytsr')
 module.exports = class Guild {
@@ -51,7 +51,6 @@ module.exports = class Guild {
             metaData.title = (await ytdl.getBasicInfo(song)).videoDetails.title
             metaData.link = song
         } else {
-
             song = await ytsr(song)
             song.items=song.items.filter(it=>{return it.type==="video"})
             if (song.items.length === 0) {
@@ -104,8 +103,11 @@ module.exports = class Guild {
                     this.playAudio(info.link, info.title)
                     return
                 }
+
+                this.say({
+                    message:"Finished playing all songs 💽"
+                })
                 this.voiceChannel.leave()
-                this.voiceChannel = null
                 this.isPlaying = false
             })
             .on('error', (error) => {
@@ -118,7 +120,7 @@ module.exports = class Guild {
     }
 
     stopAudio() {
-        this.voiceCon.dispatcher.end()
+        if(!!this.voiceCon) this.voiceCon.dispatcher.end()
     }
 
 }

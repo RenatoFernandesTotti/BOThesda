@@ -58,8 +58,8 @@ exports.play = {
             guild = guilds.get(msg.guild.id)
             //if no guild was found create new contract
             if (!guild) {
-                guilds.set(msg.guild.id, new Guild())
-                guild = guilds.get(msg.guild.id)
+                guild = new Guild()
+                guilds.set(msg.guild.id, guild)
             }
 
 
@@ -68,28 +68,18 @@ exports.play = {
                 guild.contract(msg)
             }
             else if (guild.voiceChannel !== msg.member.voice.channel) {
-                guild.say(
-                    {
-                        title: `I'm already in a voice channel`,
-                        color: 'warning'
-                    }
-                )
-
+                guild.say({
+                    title: `I'm already in a voice channel`,
+                    color: 'warning'
+                })
                 return
             }
 
             guild.play(song)
+            
         } catch (error) {
-            await Guild.say({
-                title: "Error",
-                message: error,
-                channel: guild.textChannel
-            })
+            throw error
         }
-
-
-
-
     }
 }
 
@@ -105,6 +95,9 @@ exports.stop = {
             })
             return
         }
+        guild.say({
+            title:"Stoping all songs ⏹️"
+        })
         guild.songs = []
         guild.stopAudio()
     }
@@ -122,6 +115,12 @@ exports.skip = {
             })
             return
         }
+        if (guild.songs.length!==0) {
+            guild.say({
+                title:"Skiping song ⏩"
+            })
+        }
+
         guild.stopAudio()
     }
 }

@@ -1,4 +1,4 @@
-const send = require('./sendMessage');
+const send = require('../lib/sendMessage');
 const ytdl = require('ytdl-core')
 const ytsr = require('ytsr')
 module.exports = class Guild {
@@ -108,7 +108,7 @@ module.exports = class Guild {
                 this.voiceChannel = null
                 this.isPlaying = false
             })
-            .on('error', () => {
+            .on('error', (error) => {
                 say({
                     title: "An error has ocurred",
                     color: "error",

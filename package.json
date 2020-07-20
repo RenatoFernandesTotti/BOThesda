@@ -23,6 +23,7 @@
     "dotenv": "^8.2.0",
     "ffmpeg-static": "^4.2.5",
     "opusscript": "0.0.7",
+    "winston": "^3.3.3",
     "ytdl-core": "^3.1.2",
     "ytsr": "^0.1.15"
   }

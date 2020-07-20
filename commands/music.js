@@ -1,5 +1,5 @@
 
-const Guild = require('../lib/guild')
+const Guild = require('../classes/guild')
 
 
 bot.on('voiceStateUpdate', (oldP, newP) => {

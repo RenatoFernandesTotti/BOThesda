@@ -1,21 +1,27 @@
+const { loggers } = require('winston');
 
 global.logger = require('./lib/logger')
 try {
+  require('dotenv').config()
   const Discord = require('discord.js');
   global.guilds = new Map()
   global.bot = new Discord.Client();
   const commands = require('./commands/exporter')
   const sendMessage = require('./lib/sendEmbedMessage')
   const sendEmbed = require('./classes/guild').say
+  global.fbAdm = require("firebase-admin");
+  const prefix = process.env.PREFIX
 
 
 
 
+  fbAdm.initializeApp({
+    credential: fbAdm.credential.cert(JSON.parse(process.env.FB_ADM_KEY)),
+    databaseURL: "https://soundboardbot-ed2d4.firebaseio.com"
+  });
 
-
-  require('dotenv').config()
-  let prefix = process.env.PREFIX
-
+  var bucket = fbAdm.storage().buckets
+  logger.debug(bucket)
 
   bot.commands = new Discord.Collection();
 

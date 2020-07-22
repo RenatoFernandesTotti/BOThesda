@@ -7,12 +7,9 @@ try {
   global.guilds = new Map()
   global.bot = new Discord.Client();
   const commands = require('./commands/exporter')
-  const sendMessage = require('./lib/sendEmbedMessage')
   const sendEmbed = require('./classes/guild').say
   global.fbAdm = require("firebase-admin");
   const prefix = process.env.PREFIX
-
-
 
 
   fbAdm.initializeApp({
@@ -20,12 +17,9 @@ try {
     databaseURL: "https://soundboardbot-ed2d4.firebaseio.com"
   });
 
-  var bucket = fbAdm.storage().buckets
-  logger.debug(bucket)
+  global.db=fbAdm.firestore()
 
   bot.commands = new Discord.Collection();
-
-
   Object.keys(commands).map(key => {
     bot.commands.set(commands[key].name, commands[key]);
   });

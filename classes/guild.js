@@ -1,7 +1,6 @@
 const send = require('../lib/sendEmbedMessage');
 const ytdl = require('ytdl-core')
 const ytsr = require('ytsr');
-const { loggers } = require('winston');
 module.exports = class Guild {
 
     //properties
@@ -73,7 +72,7 @@ module.exports = class Guild {
             metaData.title = (await ytdl.getBasicInfo(song)).videoDetails.title
             metaData.link = song
         } else {
-            song = await ytsr(song)
+            song = await ytsr(song,{limit:1})
             song.items = song.items.filter(it => { return it.type === "video" })
             if (song.items.length === 0) {
                 await this.say({

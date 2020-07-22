@@ -137,6 +137,7 @@ module.exports = class Guild {
             .on('error', async (error) => {
                 await this.voiceChannel.leave()
                 this.voiceChannel = null
+                this.isPlaying = false
                 this.say({
                     title:"Error",
                     message:error.stack

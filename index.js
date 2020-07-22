@@ -1,25 +1,25 @@
+const { loggers } = require('winston');
 
 global.logger = require('./lib/logger')
 try {
+  require('dotenv').config()
   const Discord = require('discord.js');
   global.guilds = new Map()
   global.bot = new Discord.Client();
   const commands = require('./commands/exporter')
-  const sendMessage = require('./lib/sendEmbedMessage')
   const sendEmbed = require('./classes/guild').say
+  global.fbAdm = require("firebase-admin");
+  const prefix = process.env.PREFIX
 
 
+  fbAdm.initializeApp({
+    credential: fbAdm.credential.cert(JSON.parse(process.env.FB_ADM_KEY)),
+    databaseURL: "https://soundboardbot-ed2d4.firebaseio.com"
+  });
 
-
-
-
-  require('dotenv').config()
-  let prefix = process.env.PREFIX
-
+  global.db=fbAdm.firestore()
 
   bot.commands = new Discord.Collection();
-
-
   Object.keys(commands).map(key => {
     bot.commands.set(commands[key].name, commands[key]);
   });
@@ -54,12 +54,16 @@ try {
           title: "Command not found",
           message: `Please type ${prefix}help to see available commands`,
           channel: msg.channel,
-          color: 'info'
+          color: 'error'
         })
         return
       }
-
-      logger.error(error.stack)
+      sendEmbed({
+        title: "Err0r",
+        message: error.stack,
+        channel: msg.channel,
+        color: 'error'
+      })
     }
   });
 

@@ -123,8 +123,9 @@ module.exports = class Guild {
                 this.isPlaying = false
             })
             .on('error', (error) => {
-                say({
+                this.say({
                     title: "An error has ocurred",
+                    message:error.stack,
                     color: "error",
                 })
             })

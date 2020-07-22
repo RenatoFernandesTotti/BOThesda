@@ -134,10 +134,13 @@ module.exports = class Guild {
                 this.voiceChannel = null
                 this.isPlaying = false
             })
-            .on('error', (error) => {
-                this.voiceChannel.leave()
+            .on('error', async (error) => {
+                await this.voiceChannel.leave()
                 this.voiceChannel = null
-                throw error
+                this.say({
+                    title:"Error",
+                    message:error.stack
+                })
             })
     }
 

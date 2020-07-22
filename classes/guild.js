@@ -1,11 +1,13 @@
 const send = require('../lib/sendEmbedMessage');
 const ytdl = require('ytdl-core')
-const ytsr = require('ytsr')
+const ytsr = require('ytsr');
+const { loggers } = require('winston');
 module.exports = class Guild {
 
     //properties
     songs = []
-    songPlaying={}
+    songPlaying = {}
+    soundBoardPLaying=false
     voiceChannel = null
     textChannel = null
     voiceCon = null
@@ -18,7 +20,7 @@ module.exports = class Guild {
     //static methods
     static async say({ title = "", color = 'sucess', message = "", channel }) {
         if (!channel) {
-            console.log("Channel not specified");
+            logger.error("Channel not specified");
             return
         }
         return await send({ title, color, message, channel })
@@ -28,7 +30,7 @@ module.exports = class Guild {
     //methods
     async say({ title = "", color = 'sucess', message = "" }) {
         if (!this.textChannel) {
-            console.log("Channel not specified");
+            logger.error("Channel not specified");
             return
         }
         let channel = this.textChannel
@@ -36,17 +38,27 @@ module.exports = class Guild {
     }
 
     async contract(msg) {
-        try{
+        try {
+            //User was not in a voice channel
+            if (!msg.member.voice.channel) {
+                let reponse = await Guild.say({
+                    title: `You must be in a voice channel ${msg.member.displayName}`,
+                    color: '#a83232',
+                    channel: msg.channel
+                })
+                reponse.react('😖')
+                return
+            }
             this.voiceChannel = msg.member.voice.channel
             this.voiceCon = await this.voiceChannel.join()
             this.textChannel = msg.channel
             this.members = this.voiceChannel.members.size
         }
-        catch(error){
+        catch (error) {
             await Guild.say({
-                channel:msg.channel,
-                title:'An error has occured',
-                message:"Trying to connect again"
+                channel: msg.channel,
+                title: 'An error has occured',
+                message: "Trying to connect again"
             })
             this.contract(msg)
         }
@@ -62,7 +74,7 @@ module.exports = class Guild {
             metaData.link = song
         } else {
             song = await ytsr(song)
-            song.items=song.items.filter(it=>{return it.type==="video"})
+            song.items = song.items.filter(it => { return it.type === "video" })
             if (song.items.length === 0) {
                 await this.say({
                     color: "error",
@@ -79,7 +91,7 @@ module.exports = class Guild {
         }
 
         if (!this.isPlaying) {
-            this.songPlaying=metaData
+            this.songPlaying = metaData
             this.playAudio(metaData.link, metaData.title)
         } else {
             await this.say(
@@ -109,17 +121,17 @@ module.exports = class Guild {
             .on('finish', () => {
                 if (this.songs.length !== 0) {
                     let info = this.songs.shift()
-                    this.songPlaying=info                    
+                    this.songPlaying = info
 
                     this.playAudio(info.link, info.title)
                     return
                 }
 
                 this.say({
-                    message:"Finished playing all songs 💽"
+                    message: "Finished playing all songs 💽"
                 })
                 this.voiceChannel.leave()
-                this.voiceChannel=null
+                this.voiceChannel = null
                 this.isPlaying = false
             })
             .on('error', (error) => {
@@ -130,8 +142,19 @@ module.exports = class Guild {
             })
     }
 
+    async playSoundBoard(url){
+        if (!!this.voiceCon) {
+            this.soundBoardPLaying=true
+            await this.voiceCon.play(url).on('finish', async _ => {
+                await this.voiceChannel.leave()
+                this.soundBoardPLaying=false
+                this.voiceChannel=null
+            })
+        }
+    }
+
     stopAudio() {
-        if(!!this.voiceCon) this.voiceCon.dispatcher.end()
+        if (!!this.voiceCon && (this.isPlaying || this.soundBoardPLaying)) this.voiceCon.dispatcher.end()
     }
 
 }

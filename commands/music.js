@@ -43,16 +43,7 @@ exports.play = {
                 return
             }
 
-            //User was not in a voice channel
-            if (!msg.member.voice.channel) {
-                let reponse = await Guild.say({
-                    title: `You must be in a voice channel ${msg.member.displayName}`,
-                    color: '#a83232',
-                    channel: msg.channel
-                })
-                reponse.react('😖')
-                return
-            }
+
 
             //try to get guild contract
             guild = guilds.get(msg.guild.id)
@@ -61,7 +52,13 @@ exports.play = {
                 guild = new Guild()
                 guilds.set(msg.guild.id, guild)
             }
-
+            if(guild.soundBoardPLaying){
+                guild.say({
+                    message:`I'm playing a sound in soundboard right now, plase stop\
+                    it before with ${process.env.PREFIX}stop first`
+                })
+                return
+            }
 
             //if bot not in a voice channel then join
             if (!guild.voiceChannel) {
@@ -88,7 +85,7 @@ exports.stop = {
     description: 'Stop all music',
     execute: async function (msg, args) {
         let guild = guilds.get(msg.guild.id)
-        if (!guild || !guild.isPlaying) {
+        if (!guild || !( guild.isPlaying || guild.soundBoardPLaying)) {
             Guild.say({
                 channel: msg.channel,
                 message: "No Songs to stop"
@@ -96,7 +93,7 @@ exports.stop = {
             return
         }
         guild.say({
-            title:"Stoping all songs ⏹️"
+            title:"Stoping all sounds ⏹️"
         })
         guild.songs = []
         guild.stopAudio()

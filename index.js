@@ -54,12 +54,16 @@ try {
           title: "Command not found",
           message: `Please type ${prefix}help to see available commands`,
           channel: msg.channel,
-          color: 'info'
+          color: 'error'
         })
         return
       }
-
-      logger.error(error.stack)
+      sendEmbed({
+        title: "Err0r",
+        message: error.stack,
+        channel: msg.channel,
+        color: 'error'
+      })
     }
   });
 

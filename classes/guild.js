@@ -118,7 +118,7 @@ module.exports = class Guild {
         )
 
         this.voiceCon.play(ytdl(url, { filter: 'audioonly' }))
-            .on('finish', () => {
+            .on('finish', _ => {
                 if (this.songs.length !== 0) {
                     let info = this.songs.shift()
                     this.songPlaying = info
@@ -135,10 +135,9 @@ module.exports = class Guild {
                 this.isPlaying = false
             })
             .on('error', (error) => {
-                say({
-                    title: "An error has ocurred",
-                    color: "error",
-                })
+                this.voiceChannel.leave()
+                this.voiceChannel = null
+                throw error
             })
     }
 

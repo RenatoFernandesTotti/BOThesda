@@ -64,7 +64,8 @@ exports.sb = {
                     let list = ""
                     sound = (await db.collection(msg.guild.id).get()).docs
                     if (sound.length === 0) {
-                        guild.say({
+                        Guild.say({
+                            channel: msg.channel,
                             message: "there are no sounds for this server"
                         })
                         return

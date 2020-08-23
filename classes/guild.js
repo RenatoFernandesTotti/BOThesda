@@ -6,7 +6,7 @@ module.exports = class Guild {
     //properties
     songs = []
     songPlaying = {}
-    soundBoardPLaying=false
+    soundBoardPLaying = false
     voiceChannel = null
     textChannel = null
     voiceCon = null
@@ -72,7 +72,7 @@ module.exports = class Guild {
             metaData.title = (await ytdl.getBasicInfo(song)).videoDetails.title
             metaData.link = song
         } else {
-            song = await ytsr(song,{limit:1})
+            song = await ytsr(song, { limit: 1 })
             song.items = song.items.filter(it => { return it.type === "video" })
             if (song.items.length === 0) {
                 await this.say({
@@ -116,7 +116,13 @@ module.exports = class Guild {
             }
         )
 
-        this.voiceCon.play(ytdl(url, { filter: 'audioonly' }))
+        this.voiceCon.play(ytdl(url, {
+            requestOptions: {
+                headers: {
+                    'Cookie': process.env.COOKIE
+                }
+            }, filter: 'audioonly'
+        }))
             .on('finish', _ => {
                 if (this.songs.length !== 0) {
                     let info = this.songs.shift()
@@ -138,19 +144,19 @@ module.exports = class Guild {
                 this.voiceChannel = null
                 this.isPlaying = false
                 this.say({
-                    title:"Error",
-                    message:error.stack
+                    title: "Error",
+                    message: error.stack
                 })
             })
     }
 
-    async playSoundBoard(url){
+    async playSoundBoard(url) {
         if (!!this.voiceCon) {
-            this.soundBoardPLaying=true
+            this.soundBoardPLaying = true
             await this.voiceCon.play(url).on('finish', async _ => {
                 await this.voiceChannel.leave()
-                this.soundBoardPLaying=false
-                this.voiceChannel=null
+                this.soundBoardPLaying = false
+                this.voiceChannel = null
             })
         }
     }

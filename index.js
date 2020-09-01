@@ -1,5 +1,3 @@
-const { loggers } = require('winston');
-
 global.logger = require('./lib/logger')
 try {
   require('dotenv').config()

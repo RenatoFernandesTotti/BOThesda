@@ -9,6 +9,7 @@ try {
     exports.stop = music.stop
     exports.skip = music.skip
     exports.queue = music.queue
+    exports.spotify = music.spotify
 
     //util
     exports.help = util.help

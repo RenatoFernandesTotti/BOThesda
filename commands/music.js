@@ -74,7 +74,7 @@ exports.play = {
                 return
             }
 
-            guild.play(song, shoudSayQueued)
+            await guild.play(song, shoudSayQueued)
 
             return
 
@@ -169,7 +169,6 @@ exports.spotify = {
                         'Authorization': `Basic ${authKey}`
                     }
                 })).data.access_token
-            console.log(playlist);
 
             let musics = (await axios.get(`https://api.spotify.com/v1/playlists/${playlist}/tracks`, {
                 headers: {
@@ -177,13 +176,22 @@ exports.spotify = {
                 }
             })).data.items
 
-
+            let querys=[]
             for (const element of musics) {
                 let track = element.track
                 let query = [`${track.name}`, ` - `, `${track.artists[0].name}`]
-                console.log(query);
-                await exports.play.execute(msg, query, false)
+                querys.push(query)
             }
+
+            querys=querys.map(async x=>{
+                return exports.play.execute(msg, x, false)
+            })
+
+            
+            await Promise.all(querys)
+
+            exports.queue.execute(msg,args)
+
 
 
         } catch (error) {

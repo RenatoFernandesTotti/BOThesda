@@ -66,7 +66,7 @@ module.exports = class Guild {
 
     //If song was URL playit directly and get the video title, if not,
     //search for it and get the metadata
-    async play(song, shoudSayQueued=true) {
+    async play(song, shoudSayQueued = true) {
         let metaData = {}
         if (ytdl.validateURL(song)) {
             metaData.title = (await ytdl.getBasicInfo(song)).videoDetails.title
@@ -127,7 +127,10 @@ module.exports = class Guild {
                 headers: {
                     'Cookie': process.env.COOKIE
                 }
-            }, filter: 'audioonly'
+            },
+            filter: 'audioonly',
+            quality: 'highestaudio',
+            highWaterMark: 1 << 25
         }))
             .on('finish', _ => {
                 if (this.songs.length !== 0) {

@@ -66,7 +66,7 @@ module.exports = class Guild {
 
     //If song was URL playit directly and get the video title, if not,
     //search for it and get the metadata
-    async play(song) {
+    async play(song, shoudSayQueued=true) {
         let metaData = {}
         if (ytdl.validateURL(song)) {
             metaData.title = (await ytdl.getBasicInfo(song)).videoDetails.title
@@ -93,13 +93,16 @@ module.exports = class Guild {
             this.songPlaying = metaData
             this.playAudio(metaData.link, metaData.title)
         } else {
-            await this.say(
-                {
-                    title: `Queued 📜`,
-                    message: metaData.title,
-                    color: 'sucess'
-                }
-            )
+            if (shoudSayQueued) {
+
+                await this.say(
+                    {
+                        title: `Queued 📜`,
+                        message: metaData.title,
+                        color: 'sucess'
+                    }
+                )
+            }
 
             this.songs.push({ title: metaData.title, link: metaData.link })
         }
@@ -108,6 +111,8 @@ module.exports = class Guild {
     async playAudio(url, name) {
         this.isPlaying = true
 
+
+
         await this.say(
             {
                 title: `Playing ▶️`,
@@ -115,6 +120,7 @@ module.exports = class Guild {
                 color: 'sucess'
             }
         )
+
 
         this.voiceCon.play(ytdl(url, {
             requestOptions: {

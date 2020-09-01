@@ -1,6 +1,8 @@
 
 const Guild = require('../classes/guild')
-
+const axios = require('axios')
+const { play } = require('./exporter')
+const { query } = require('winston')
 
 bot.on('voiceStateUpdate', (oldP, newP) => {
     let guild = guilds.get(newP.guild.id)
@@ -28,7 +30,7 @@ bot.on('voiceStateUpdate', (oldP, newP) => {
 exports.play = {
     name: 'play',
     description: 'Play music with name or URL',
-    execute: async function (msg, args) {
+    execute: async function (msg, args, shoudSayQueued = true) {
         let guild
         try {
             let song = args.join(' ')
@@ -52,9 +54,9 @@ exports.play = {
                 guild = new Guild()
                 guilds.set(msg.guild.id, guild)
             }
-            if(guild.soundBoardPLaying){
+            if (guild.soundBoardPLaying) {
                 guild.say({
-                    message:`I'm playing a sound in soundboard right now, plase stop\
+                    message: `I'm playing a sound in soundboard right now, plase stop\
                     it before with ${process.env.PREFIX}stop first`
                 })
                 return
@@ -72,8 +74,10 @@ exports.play = {
                 return
             }
 
-            guild.play(song)
-            
+            guild.play(song, shoudSayQueued)
+
+            return
+
         } catch (error) {
             throw error
         }
@@ -85,7 +89,7 @@ exports.stop = {
     description: 'Stop all music',
     execute: async function (msg, args) {
         let guild = guilds.get(msg.guild.id)
-        if (!guild || !( guild.isPlaying || guild.soundBoardPLaying)) {
+        if (!guild || !(guild.isPlaying || guild.soundBoardPLaying)) {
             Guild.say({
                 channel: msg.channel,
                 message: "No Songs to stop"
@@ -93,7 +97,7 @@ exports.stop = {
             return
         }
         guild.say({
-            title:"Stoping all sounds ⏹️"
+            title: "Stoping all sounds ⏹️"
         })
         guild.songs = []
         guild.stopAudio()
@@ -112,9 +116,9 @@ exports.skip = {
             })
             return
         }
-        if (guild.songs.length!==0) {
+        if (guild.songs.length !== 0) {
             guild.say({
-                title:"Skiping song ⏩"
+                title: "Skiping song ⏩"
             })
         }
 
@@ -149,6 +153,42 @@ exports.queue = {
             color: 'info',
             message: message
         })
+    }
+}
+
+exports.spotify = {
+    name: "spotify",
+    description: "use the playlist ID to play it, the id can be foundif you open it in a browser and read the url",
+    execute: async function (msg, args) {
+        try {
+            let playlist = args.join(' ')
+            let authKey = Buffer.from(`${process.env.CLIENT}:${process.env.CLIENTSECRET}`).toString('base64')
+            let token = (await axios.post('https://accounts.spotify.com/api/token', "grant_type=client_credentials",
+                {
+                    headers: {
+                        'Authorization': `Basic ${authKey}`
+                    }
+                })).data.access_token
+            console.log(playlist);
+
+            let musics = (await axios.get(`https://api.spotify.com/v1/playlists/${playlist}/tracks`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })).data.items
+
+
+            for (const element of musics) {
+                let track = element.track
+                let query = [`${track.name}`, ` - `, `${track.artists[0].name}`]
+                console.log(query);
+                await exports.play.execute(msg, query, false)
+            }
+
+
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
 

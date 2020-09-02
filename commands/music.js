@@ -182,6 +182,8 @@ exports.spotify = {
                 let query = [`${track.name}`, ` - `, `${track.artists[0].name}`]
                 querys.push(query)
             }
+            let rand = Math.floor(Math.random()*querys.length)
+            await exports.play.execute(msg, querys.splice(rand,1), false)
 
             querys=querys.map(async x=>{
                 return exports.play.execute(msg, x, false)

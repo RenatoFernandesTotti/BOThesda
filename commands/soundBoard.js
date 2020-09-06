@@ -1,4 +1,4 @@
-const Guild = require('../classes/guild')
+const Guild = require('../lib/classes/guild')
 const { loggers } = require('winston')
 
 exports.sb = {

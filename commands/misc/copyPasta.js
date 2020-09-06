@@ -1,7 +1,7 @@
 const axios = require('axios')
-const Guild = require('../lib/classes/guild')
 
-exports.copyPasta = {
+
+module.exports = {
     name: 'copypasta',
     description: 'Grab a top copypasta',
     execute: async function (msg, args) {
@@ -10,14 +10,13 @@ exports.copyPasta = {
         let text = info[index].data.selftext
 
         if (text.length <= 2048) {
-            Guild.say({
+            bot.say({
                 channel: msg.channel,
                 message: text
             })
-        }
-        else {
+        } else {
             let i = 1
-            await Guild.say({
+            await bot.say({
                 channel: msg.channel,
                 message: `Copy pasta too large, falling to safe mode`
             })
@@ -27,13 +26,13 @@ exports.copyPasta = {
             }
 
             let pivot = Math.floor(text.length / i)
-            let pointer=0
+            let pointer = 0
             for (let index = 0; index < i; index++) {
-                await Guild.say({
+                await bot.say({
                     channel: msg.channel,
-                    message: text.substr(pointer,pivot)
+                    message: text.substr(pointer, pivot)
                 })
-                pointer+=pivot
+                pointer += pivot
             }
         }
 

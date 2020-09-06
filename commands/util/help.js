@@ -1,5 +1,5 @@
-const say = require('../lib/sendEmbedMessage')
-exports.help = {
+
+module.exports = {
     name: 'help',
     description: 'Show this message',
     execute: async function (msg, args) {
@@ -8,9 +8,7 @@ exports.help = {
             message+=` ${command.name} : ${command.description}\n`
         })
         message+="\`\`\`"
-
-
-        say({
+        bot.say({
             title:"Commands",
             message:message,
             color:"info",

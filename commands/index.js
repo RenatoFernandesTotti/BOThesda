@@ -1,8 +1,7 @@
 try {
-    module.exports=Object.assign(module.exports,require('./music'))
+    module.exports=Object.assign(module.exports,require('./sounds'))
     module.exports=Object.assign(module.exports,require('./util'))
-    module.exports=Object.assign(module.exports,require('./shitPost'))
-    module.exports=Object.assign(module.exports,require('./soundBoard'))
+    module.exports=Object.assign(module.exports,require('./misc'))
 } catch (error) {
     throw error
 }

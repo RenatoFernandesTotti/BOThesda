@@ -1,3 +1,6 @@
+const axios = require('axios')
+const play = require('./play')
+const queue = require('./queue')
 module.exports = {
     name: "spotify",
     description: "use the playlist ID to play it, the id can be foundif you open it in a browser and read the url",
@@ -25,20 +28,19 @@ module.exports = {
                 querys.push(query)
             }
             let rand = Math.floor(Math.random()*querys.length)
-            await exports.play.execute(msg, querys.splice(rand,1), false)
+            await play.execute(msg, querys.splice(rand,1), false)
 
             querys=querys.map(async x=>{
-                return exports.play.execute(msg, x, false)
+                return play.execute(msg, x, false)
             })
 
             
             await Promise.all(querys)
 
-            exports.queue.execute(msg,args)
+            queue.execute(msg,args)
 
         } catch (error) {
-            console.log(error);
-
+            throw error
         }
     }
 }

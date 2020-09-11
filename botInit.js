@@ -1,6 +1,9 @@
 try {
   global.logger = require('./lib/logger')
   const Discord = require('discord.js');
+  const {
+    MessageEmbed
+  } = require('discord.js');
   require('dotenv').config()
   global.guilds = new Map()
   global.bot = new Discord.Client();
@@ -30,7 +33,7 @@ try {
     try {
       if (!msg.content.startsWith(prefix)) return;
       if (msg.author.bot) return;
-
+      let embed = new MessageEmbed()
       let args = msg.content.replace(prefix, "").split(/ +/)
       let command = args.shift().toLowerCase()
       command = bot.commands.get(command)
@@ -54,6 +57,29 @@ try {
       logger.emerg(error.stack)
     }
   });
+
+
+  bot.on('voiceStateUpdate', (oldP, newP) => {
+    let guild = guilds.get(newP.guild.id)
+
+    if (!guild || !guild.isPlaying) return
+
+    if (guild.voiceChannel !== newP.channel) {
+      guild.members--
+    } else {
+      guild.members++
+    }
+    if (guild.members === 1) {
+      bot.say({
+        title: `I was alone so I cleared the queue and left the channel`,
+        color: 'info',
+        channel: guild.textChannel
+      })
+      guild.songs = []
+      guild.stopAudio()
+    }
+  })
+
   bot.login(process.env.AUTH_TOKEN);
 } catch (error) {
   console.log('Major error:', error)

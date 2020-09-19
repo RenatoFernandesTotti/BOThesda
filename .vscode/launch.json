@@ -12,7 +12,8 @@
                 "<node_internals>/**"
             ],
             "type": "pwa-node",
-            "restart": true
+            "restart": true,
+            "outputCapture": "std"
         }
     ]
 }

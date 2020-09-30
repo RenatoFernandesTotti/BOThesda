@@ -25,7 +25,7 @@
     "firebase-admin": "^9.2.0",
     "seedrandom": "^3.0.5",
     "winston": "^3.3.3",
-    "ytdl-core": "^3.2.2",
-    "ytsr": "^1.0.1"
+    "ytdl-core": "^3.3.0",
+    "ytsr": "^1.0.3"
   }
 }

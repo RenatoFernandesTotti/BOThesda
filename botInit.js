@@ -30,17 +30,14 @@ try {
   bot.on('message', async msg => {
     try {
       if (!msg.content.startsWith(prefix)) return;
-      if (msg.author.bot) return; 
-      let embed = new MessageEmbed()
+      if (msg.author.bot) return;
+
       let args = msg.content.replace(prefix, "").split(/ +/)
       let command = args.shift().toLowerCase()
       command = bot.commands.get(command)
-      logger.info(`Bot called
-      Guild:${msg.guild.name}
-      Author:${msg.author.username}
-      Command:${command.name}
-      Args:${args}
-      `)
+
+
+
       if (!command) {
         await bot.say({
           title: "Command not found",
@@ -50,6 +47,14 @@ try {
         })
         return
       }
+
+      logger.info(`Bot called
+      Guild:${msg.guild.name}
+      Author:${msg.author.username}
+      Command:${command.name}
+      Args:${args}
+      `)
+
       await command.execute(msg, args)
     } catch (error) {
       await bot.say({

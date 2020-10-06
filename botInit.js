@@ -1,10 +1,7 @@
 try {
   global.logger = require('./lib/logger')
   const Discord = require('discord.js');
-  const {
-    MessageEmbed
-  } = require('discord.js');
-  require('dotenv').config()
+
   global.guilds = new Map()
   global.bot = new Discord.Client();
 

@@ -46,7 +46,7 @@ module.exports = {
                 return
             }
 
-            await guild.play(song, shoudSayQueued)
+            await guild.play(song, shoudSayQueued,msg)
 
             return
 

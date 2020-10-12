@@ -18,7 +18,7 @@ module.exports = {
                 })
             }
 
-            guild.stopAudio()
+            guild.nextSong()
         } catch (error) {
             throw error
         }

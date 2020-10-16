@@ -1,14 +1,13 @@
+import winston from 'winston';
+
 function dateFormat() {
-  return (new Date).toLocaleString('br-SP',{timeZone:'America/Sao_Paulo'})
+  return (new Date()).toLocaleString('br-SP', { timeZone: 'America/Sao_Paulo' });
 }
 
-
-
-const winston = require('winston');
-logger = winston.createLogger({
+const logger = winston.createLogger({
   levels: winston.config.syslog.levels,
   defaultMeta: {
-    time: dateFormat()
+    time: dateFormat(),
   },
   transports: [
     new winston.transports.Console({
@@ -16,12 +15,11 @@ logger = winston.createLogger({
         winston.format.colorize(),
         winston.format.errors(),
         winston.format.simple(),
-      )
-    })
+      ),
+    }),
   ],
 });
 
-logger.debug(JSON.stringify(winston.config.syslog.levels))
-
+logger.debug(JSON.stringify(winston.config.syslog.levels));
 
 module.exports = logger;

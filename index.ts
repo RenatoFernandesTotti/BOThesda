@@ -1,9 +1,12 @@
 import { ShardingManager } from 'discord.js';
-
+import { config } from 'dotenv';
+import global from './@types/global.d';
 import logger from './lib/logger';
 
-require('dotenv').config();
+config();
+
+global.LOGGER = logger;
 
 const manager = new ShardingManager('./botInit.js', { token: process.env.AUTH_TOKEN });
-manager.on('shardCreate', (shard) => logger.log(`Launched shard ${shard.id}`));
+manager.on('shardCreate', (shard) => logger.info(`Launched shard ${shard.id}`));
 manager.spawn();

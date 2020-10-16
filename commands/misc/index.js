@@ -1,1 +1,0 @@
-exports.copyPasta = require('./copyPasta')

@@ -22,4 +22,4 @@ const logger = winston.createLogger({
 
 logger.debug(JSON.stringify(winston.config.syslog.levels));
 
-module.exports = logger;
+export default logger;

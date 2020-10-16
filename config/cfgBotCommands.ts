@@ -1,12 +1,11 @@
-const { loggers } = require('winston');
+import commands from '../commands';
 
-module.exports = (_) => {
-  const commands = require('../commands');
+module.exports = () => {
   global.BOT.commands = new Map();
   Object.keys(commands).map((key) => {
     global.BOT.commands.set(commands[key].name, commands[key]);
-    logger.info(`${commands[key].name} loaded`);
+    global.LOGGER.info(`${commands[key].name} loaded`);
   });
 
-  global.BOT.say = require('../lib/sendEmbedMessage');
+ 
 };

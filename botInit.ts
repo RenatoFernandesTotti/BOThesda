@@ -1,54 +1,59 @@
-const Discord = require('discord.js');
+import Client from './lib/classes/BotClient';
+
 require('./config')();
 
 try {
   global.GUILDS = new Map();
-  global.BOT = new Discord.Client();
+  global.BOT = new Client();
 
   const prefix = process.env.PREFIX;
 
   global.BOT.on('ready', () => {
     try {
-      logger.info(`Logged in as ${global.BOT.user.tag}!`);
-      global.BOT.user.setPresence({
-        activity: {
-          name: `${prefix}help`,
-          type: 'WATCHING',
-        },
-        status: 'online',
-      });
+      if (global.BOT.user !== null) {
+        global.LOGGER.info(`Logged in as ${global.BOT.user.tag}!`);
+        global.BOT.user.setPresence({
+          activity: {
+            name: `${prefix}help`,
+            type: 'WATCHING',
+          },
+          status: 'online',
+        });
+      }
     } catch (error) {
-      logger.emerg(error.stack);
+      global.LOGGER.emerg(error.stack);
     }
   });
 
   global.BOT.on('message', async (msg) => {
     try {
-      if (!msg.content.startsWith(prefix)) return;
-      if (msg.author.bot) return;
+      if (prefix !== undefined) {
+        if (!msg.content.startsWith(prefix)) return;
+        if (msg.author.bot) return;
 
-      const args = msg.content.replace(prefix, '').split(/ +/);
-      let command = args.shift().toLowerCase();
-      command = global.BOT.commands.get(command);
+        const args = msg.content.replace(prefix, '').split(/ +/);
+        let command = args.shift().toLowerCase();
+        command = global.BOT.commands.get(command);
 
-      if (!command) {
-        await global.BOT.say({
-          title: 'Command not found',
-          message: `Please type ${prefix}help to see available commands`,
-          channel: msg.channel,
-          color: 'error',
-        });
-        return;
+        if (!command) {
+          await global.BOT.say({
+            title: 'Command not found',
+            message: `Please type ${prefix}help to see available commands`,
+            channel: msg.channel,
+            color: 'error',
+          });
+          return;
+        }
+
+        global.LOGGER.info(`Bot called
+        Guild:${msg.guild.name}
+        Author:${msg.author.username}
+        Command:${command.name}
+        Args:${args}
+        `);
+
+        await command.execute(msg, args);
       }
-
-      logger.info(`Bot called
-      Guild:${msg.guild.name}
-      Author:${msg.author.username}
-      Command:${command.name}
-      Args:${args}
-      `);
-
-      await command.execute(msg, args);
     } catch (error) {
       await global.BOT.say({
         title: 'Err0r',
@@ -56,7 +61,7 @@ try {
         channel: msg.channel,
         color: 'error',
       });
-      logger.emerg(error.stack);
+      global.LOGGER.emerg(error.stack);
     }
   });
 

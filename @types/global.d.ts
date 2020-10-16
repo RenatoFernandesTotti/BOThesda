@@ -1,8 +1,10 @@
-import { Client } from 'discord.js';
+/* eslint-disable no-unused-vars */
 import { Logger } from 'winston';
+import Client from '../lib/classes/BotClient';
 
 declare global {
-    namespace NodeJS {
+    // eslint-disable-next-line import/prefer-default-export
+     namespace NodeJS {
       interface Global {
             BOT:Client;
             GUILDS: Map<any, any>;
@@ -10,3 +12,5 @@ declare global {
       }
     }
   }
+
+export default global;

@@ -1,28 +1,31 @@
 import { Message } from 'discord.js';
-impot {randomWithLimits} from  '../../lib/randomSeed' as rand
+import rand from '../../lib/randomSeed';
 
+interface finalMessage{
+    [key:string]:{
+        values:Array<number>,
+        sum:number
+    }
+}
 
 module.exports = {
   name: 'roll',
   description: 'Roll dice simple as that',
-  async execute(msg:Message, args = []) {
-    const finalmessage = {};
+  async execute(msg:Message, args :string[]) {
+    const finalmessage:finalMessage = {};
     let finalmessageString = '';
     let finalSum = 0;
     const sum = args.includes('+');
-    const private = args.includes('p');
-    args = args.filter((el) => el !== '+' && el !== 'p');
-    args.forEach((element) => {
+    const sendInDM = args.includes('p');
+    const filteredArgs = args.filter((el) => el !== '+' && el !== 'p');
+    filteredArgs.forEach((element) => {
       const data = element.split('d');
-      if (data[0] === '') data[0] = 1;
-      finalmessage[element] = {};
-      finalmessage[element].values = [];
-      if (sum) {
-        finalmessage[element].sum = 0;
-      }
+      if (data[0] === '') data[0] = '1';
 
-      for (let index = 0; index < Number.parseInt(data[0]); index++) {
-        const randNmber = rand(1, Number.parseInt(data[1]) + 1);
+      finalmessage[element] = { values: [], sum: 0 };
+
+      for (let index = 0; index < Number.parseInt(data[0], 10); index += 1) {
+        const randNmber = rand(1, Number.parseInt(data[1], 10) + 1);
         finalmessage[element].values.push(randNmber);
         if (sum) {
           finalmessage[element].sum += randNmber;
@@ -46,20 +49,20 @@ module.exports = {
       finalmessageString += `\n\n All rolls add up to ${finalSum}`;
     }
 
-    if (private) {
-      bot.say({
+    if (sendInDM) {
+      global.BOT.speak({
         title: '🎲 rolling dices',
         channel: await msg.channel,
-        message: 'Sending roll in private mode',
+        message: 'Sending roll in sendInDM mode',
       });
-      bot.say({
+      global.BOT.speak({
         title: '🎲 rolling dices',
         channel: await msg.author.createDM(),
         message: finalmessageString,
       });
       return;
     }
-    bot.say({
+    global.BOT.speak({
       title: '🎲 rolling dices',
       channel: msg.channel,
       message: finalmessageString,

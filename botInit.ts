@@ -1,3 +1,4 @@
+import pallete from 'lib/colorPallete';
 import Client from './lib/classes/BotClient';
 
 require('./config')();
@@ -32,21 +33,29 @@ try {
         if (msg.author.bot) return;
 
         const args = msg.content.replace(prefix, '').split(/ +/);
-        let command = args.shift().toLowerCase();
-        command = global.BOT.commands.get(command);
+        const commandName = args.shift()?.toLowerCase();
+        if (commandName === undefined) {
+          global.BOT.speak({
+            channel: msg.channel,
+            message: 'I could not understand what you said, please try again',
+          });
+          return;
+        }
+
+        const command = global.BOT.commands.get(commandName);
 
         if (!command) {
-          await global.BOT.say({
+          await global.BOT.speak({
             title: 'Command not found',
             message: `Please type ${prefix}help to see available commands`,
             channel: msg.channel,
-            color: 'error',
+            color: pallete.warning,
           });
           return;
         }
 
         global.LOGGER.info(`Bot called
-        Guild:${msg.guild.name}
+        Guild:${msg.guild?.name}
         Author:${msg.author.username}
         Command:${command.name}
         Args:${args}
@@ -55,30 +64,30 @@ try {
         await command.execute(msg, args);
       }
     } catch (error) {
-      await global.BOT.say({
+      await global.BOT.speak({
         title: 'Err0r',
         message: error.stack,
         channel: msg.channel,
-        color: 'error',
+        color: pallete.warning,
       });
       global.LOGGER.emerg(error.stack);
     }
   });
 
   global.BOT.on('voiceStateUpdate', (oldP, newP) => {
-    const guild = guilds.get(newP.guild.id);
+    const guild = global.GUILDS.get(newP.guild.id);
 
     if (!guild || !guild.isPlaying) return;
 
     if (guild.voiceChannel !== newP.channel) {
-      guild.members--;
+      guild.members -= 1;
     } else {
-      guild.members++;
+      guild.members += 1;
     }
     if (guild.members === 1) {
-      global.BOT.say({
+      global.BOT.speak({
         title: 'I was alone so I cleared the queue and left the channel',
-        color: 'info',
+        color: pallete.info,
         channel: guild.textChannel,
       });
       guild.songs = [];
@@ -88,5 +97,5 @@ try {
 
   global.BOT.login(process.env.AUTH_TOKEN);
 } catch (error) {
-  console.log('Major error:', error);
+  global.LOGGER.emerg('Major error:', error);
 }

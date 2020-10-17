@@ -45,9 +45,9 @@ export default class Guild {
           });
           return;
         }
-        this.voiceChannel = msg.member.voice.channel;
+        this.voiceChannel = null;
         this.textChannel = msg.channel;
-        this.members = this.voiceChannel.members.size;
+        this.members = 0;
         this.isPlaying = false;
         this.soundBoardPLaying = false;
       } catch (error) {

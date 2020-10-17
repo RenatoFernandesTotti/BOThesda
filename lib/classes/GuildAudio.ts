@@ -1,24 +1,22 @@
 import {
-  DMChannel, Message, NewsChannel, TextChannel, VoiceChannel, VoiceConnection,
+  Message, VoiceChannel, VoiceConnection,
 } from 'discord.js';
 
 import ytdl from 'ytdl-core';
-import ytsr from 'ytsr';
-import ytpl from 'ytpl';
+// import ytsr from 'ytsr';
+// import ytpl from 'ytpl';
 import { metaData } from 'types/song';
-import pallete from 'lib/colorPallete';
+// import pallete from 'lib/colorPallete';
 
-export default class Guild {
+export default class GuildAudio {
         // properties
         songs:metaData[] = []
 
         songPlaying:metaData = {}
 
-        soundBoardPLaying!:boolean
+        isSoundBoardPlaying!:boolean
 
         voiceChannel!:VoiceChannel|null
-
-        textChannel!:TextChannel|DMChannel|NewsChannel
 
         voiceCon? :VoiceConnection
 
@@ -37,19 +35,12 @@ export default class Guild {
               });
               return;
             }
-            if (!msg.member.voice.channel) {
-              global.BOT.speak({
-                title: `You must be in a voice channel ${msg.member.displayName}`,
-                channel: msg.channel,
-              });
-              return;
-            }
+
             // Make contract to new guild
-            this.voiceChannel = msg.member.voice.channel;
-            this.textChannel = msg.channel;
-            this.members = this.voiceChannel.members.size;
+            this.voiceChannel = null;
+            this.members = 0;
             this.isPlaying = false;
-            this.soundBoardPLaying = false;
+            this.isSoundBoardPlaying = false;
           } catch (error) {
             global.BOT.speak({
               channel: msg.channel,
@@ -66,12 +57,38 @@ export default class Guild {
           }
         }
 
+        async changeVoiceChannel(voiceChannel:VoiceChannel) {
+          this.voiceChannel = voiceChannel;
+          this.members = voiceChannel.members.size;
+        }
+
+        async playSoundBoard(url:string) {
+          this.isSoundBoardPlaying = true;
+          this.playAudio(url);
+        }
+
         async playAudio(stream:any) {
           if (this.voiceCon !== undefined) {
             this.isPlaying = true;
             this.voiceCon.play(stream)
               .on('finish', async () => { await this.nextSong(); });
           }
+        }
+
+        async stopAudio() {
+          this.voiceCon?.dispatcher.end();
+          this.voiceChannel?.leave();
+          this.isPlaying = false;
+          this.isSoundBoardPlaying = false;
+          this.voiceChannel = null;
+        }
+
+        async pauseAudio() {
+          this.voiceCon?.dispatcher.pause();
+        }
+
+        async continueAudio() {
+          this.voiceCon?.dispatcher.resume();
         }
 
         private async nextSong() {
@@ -89,6 +106,9 @@ export default class Guild {
                 }));
               }
             }
+            return;
           }
+
+          this.stopAudio();
         }
 }

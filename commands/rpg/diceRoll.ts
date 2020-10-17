@@ -8,7 +8,7 @@ interface finalMessage{
     }
 }
 
-module.exports = {
+export default {
   name: 'roll',
   description: 'Roll dice simple as that',
   async execute(msg:Message, args :string[]) {
@@ -33,18 +33,18 @@ module.exports = {
         }
       }
     });
+    const finalmessageObj = Object.entries(finalmessage);
 
-    for (const key in finalmessage) {
-      if (finalmessage.hasOwnProperty(key)) {
-        const element = finalmessage[key];
-        finalmessageString += `The ${key} rolled ${element.values} `;
-        if (sum) {
-          finalmessageString += `for a total of ${element.sum}`;
-        }
-
-        finalmessageString += '\n';
+    for (let index = 0; index < finalmessageObj.length; index += 1) {
+      const element = finalmessageObj[index];
+      finalmessageString += `The ${element[0]} rolled ${element[1].values} `;
+      if (sum) {
+        finalmessageString += `for a total of ${element[1].sum}`;
       }
+
+      finalmessageString += '\n';
     }
+
     if (sum && args.length !== 1) {
       finalmessageString += `\n\n All rolls add up to ${finalSum}`;
     }

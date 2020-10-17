@@ -3,7 +3,7 @@ import sendMessage from '../sendEmbedMessage';
 import rawCommands from '../../commands';
 
 class BotClient extends Client {
-    commands :Map<string, any>
+    commands!: Map<string, any>;
 
     constructor(options?:ClientOptions) {
       super(options);

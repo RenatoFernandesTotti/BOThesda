@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 
-const axios = require('axios');
+import axios from 'axios';
 
 export default {
   name: 'copypasta',

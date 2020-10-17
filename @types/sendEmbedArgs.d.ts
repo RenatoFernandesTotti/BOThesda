@@ -4,7 +4,7 @@ import pallete from 'lib/colorPallete';
 interface sendEmbedArgs{
     title?:string,
     color?:pallete,
-    message:string,
+    message?:string,
     channel:TextChannel|DMChannel|NewsChannel
   }
 

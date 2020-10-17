@@ -5,17 +5,19 @@ import {
 import ytdl from 'ytdl-core';
 import ytsr from 'ytsr';
 import ytpl from 'ytpl';
+import { metaData } from 'types/song';
+import pallete from 'lib/colorPallete';
 // import queue from '../../commands/sounds/queue';
 
 export default class Guild {
     // properties
-    songs = []
+    songs:metaData[] = []
 
-    songPlaying = {}
+    songPlaying:metaData = {}
 
     soundBoardPLaying!:boolean
 
-    voiceChannel!:VoiceChannel
+    voiceChannel!:VoiceChannel|null
 
     textChannel!:TextChannel|DMChannel|NewsChannel
 
@@ -63,38 +65,38 @@ export default class Guild {
     }
 
     // If song was URL playlist directly and get the video title, if not,
-    // search for it and get the metadata
+    // search for it and get the songData
     async play(song:string, shoudSayQueued = true, msg:Message) {
       try {
-        let metaData = {};
+        let songData:metaData = {};
         let isplaylist = false;
         if (ytdl.validateURL(song)) {
           if (song.includes('list')) {
-            metaData = await this.getPlaylist(song);
+            songData = await this.getPlaylist(song);
             isplaylist = true;
           } else {
             const item = await ytdl.getBasicInfo(song);
-            metaData.title = item.videoDetails.title;
-            metaData.link = song;
+            songData.title = item.videoDetails.title;
+            songData.link = song;
           }
         } else {
           const songStr = song;
-          song = await ytsr(song, {
+          let search = await ytsr(song, {
             limit: 1,
           });
-          if (song.items.length === 0) {
+          if (search.items.length === 0) {
             const i = 0;
 
             do {
               // eslint-disable-next-line no-await-in-loop
-              song = await ytsr(songStr, {
+              search = await ytsr(songStr, {
                 limit: 1,
               });
-            } while (i < 5 && song.items.length === 0);
+            } while (i < 5 && search.items.length === 0);
 
-            if (song.items.length === 0) {
-              await bot.say({
-                color: 'error',
+            if (search.items.length === 0) {
+              await global.BOT.speak({
+                color: pallete.warning,
                 message: "I didn't find any songs",
                 channel: this.textChannel,
               });
@@ -105,14 +107,14 @@ export default class Guild {
             }
           }
 
-          if (song.items[0].type === 'playlist') {
+          if (search.items[0].type === 'playlist') {
             isplaylist = true;
-            metaData = await this.getPlaylist(song.items[0].link);
+            songData = await this.getPlaylist(search.items[0].link);
           } else {
-            song.items = song.items.filter((it) => it.type === 'video');
-            if (song.items.length === 0) {
-              await bot.say({
-                color: 'error',
+            search.items = search.items.filter((it) => it.type === 'video');
+            if (search.items.length === 0) {
+              await global.BOT.speak({
+                color: pallete.warning,
                 message: "I didn't find any songs",
                 channel: this.textChannel,
               });
@@ -121,33 +123,33 @@ export default class Guild {
               }
               return;
             }
-            metaData.title = song.items[0].title;
-            metaData.link = song.items[0].link;
+            songData.title = search.items[0].title;
+            songData.link = search.items[0].link;
           }
         }
 
         if (!this.isPlaying) {
-          this.songPlaying = metaData;
-          await this.playAudio(metaData.link, metaData.title);
+          this.songPlaying = songData;
+          await this.playAudio(songData.link, songData.title);
           if (isplaylist) queue.execute(msg);
         } else {
           if (shoudSayQueued) {
-            await bot.say({
+            await global.BOT.speak({
               title: 'Queued 📜',
-              message: metaData.title,
+              message: songData.title,
               color: 'sucess',
               channel: this.textChannel,
             });
           }
 
           this.songs.push({
-            title: metaData.title,
-            link: metaData.link,
+            title: songData.title,
+            link: songData.link,
           });
         }
       } catch (error) {
-        logger.error(`${error.message}\n${error.stack}`);
-        bot.say({
+        global.LOGGER.error(`${error.message}\n${error.stack}`);
+        global.BOT.speak({
           title: 'Error',
           message: 'Please try again, something went wrong while I fetched de music',
           channel: this.textChannel,
@@ -163,10 +165,10 @@ export default class Guild {
       try {
         this.isPlaying = true;
 
-        await bot.say({
+        await global.BOT.speak({
           title: 'Playing ▶️',
           message: name,
-          color: 'sucess',
+          color: pallete.sucess,
           channel: this.textChannel,
         });
 
@@ -182,16 +184,16 @@ export default class Guild {
           .on('finish', async (_) => {
             this.nextSong();
             if (this.songs.length === 0) {
-              await bot.say({
+              await global.BOT.speak({
                 message: 'Finished playing all songs 💽',
                 channel: this.textChannel,
               });
             }
           })
           .on('error', async (error) => {
-            logger.error(`${error.message}\n${error.stack}`);
+            global.LOGGER.error(`${error.message}\n${error.stack}`);
             if (error.message.includes('416') || error.message.includes('429')) {
-              bot.say({
+              global.BOT.speak({
                 title: 'Error',
                 message: 'Something went wrong with the music',
                 channel: this.textChannel,
@@ -201,16 +203,16 @@ export default class Guild {
             }
             this.stopAudio();
 
-            bot.say({
+            global.BOT.speak({
               title: 'Error',
               message: 'Something went wrong',
               channel: this.textChannel,
             });
           });
       } catch (error) {
-        logger.error(`${error.message}\n${error.stack}`);
+        global.LOGGER.error(`${error.message}\n${error.stack}`);
 
-        bot.say({
+        global.BOT.speak({
           title: 'Error',
           message: error,
           channel: this.textChannel,
@@ -222,7 +224,7 @@ export default class Guild {
       }
     }
 
-    async playSoundBoard(url) {
+    async playSoundBoard(url:string) {
       try {
         if (this.voiceCon) {
           this.soundBoardPLaying = true;
@@ -237,8 +239,8 @@ export default class Guild {
 
     async stopAudio() {
       try {
-        if ((this.voiceCon !== null) && (this.isPlaying || this.soundBoardPLaying)) {
-          if (this.voiceCon.dispatcher != null) this.voiceCon.dispatcher.end();
+        if ((this.voiceCon !== undefined) && (this.isPlaying || this.soundBoardPLaying)) {
+          if (this.voiceCon.dispatcher !== undefined) this.voiceCon.dispatcher.end();
           await this.voiceChannel.leave();
           this.voiceChannel = null;
           this.isPlaying = false;
@@ -250,21 +252,21 @@ export default class Guild {
       }
     }
 
-    async getPlaylist(song) {
+    async getPlaylist(song:string) {
       const playlist = await ytpl(song);
-      const metaData = {};
+      const songData:metaData = {};
       playlist.items = playlist.items.filter((sg) => sg.title !== '[Deleted video]' && sg.title !== '[Private video]');
       let i = true;
 
-      await bot.say({
+      await global.BOT.speak({
         channel: this.textChannel,
         message: `Playing ${playlist.title} playlist from youtube`,
       });
 
       playlist.items.forEach((song) => {
         if (i && !this.isPlaying) {
-          metaData.title = song.title;
-          metaData.link = song.url;
+          songData.title = song.title;
+          songData.link = song.url;
           i = false;
           return;
         }
@@ -274,7 +276,7 @@ export default class Guild {
         });
       });
 
-      return metaData;
+      return songData;
     }
 
     async nextSong() {

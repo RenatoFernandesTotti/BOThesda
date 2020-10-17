@@ -1,6 +1,5 @@
 import { ShardingManager } from 'discord.js';
 import { config } from 'dotenv';
-import global from './@types/global.d';
 import logger from './lib/logger';
 
 config();

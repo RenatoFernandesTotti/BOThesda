@@ -1,7 +1,7 @@
 import winston from 'winston';
 
 function dateFormat() {
-  return (new Date()).toLocaleString('br-SP', { timeZone: 'America/Sao_Paulo' });
+  return (new Date()).toLocaleString('br-SP', {timeZone: 'America/Sao_Paulo'});
 }
 
 const logger = winston.createLogger({
@@ -12,9 +12,9 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.errors(),
-        winston.format.simple(),
+          winston.format.colorize(),
+          winston.format.errors(),
+          winston.format.simple(),
       ),
     }),
   ],

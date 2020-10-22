@@ -8,7 +8,6 @@ class BotClient extends Client {
 
     constructor(options?:ClientOptions) {
       super(options);
-      
     }
 
     readonly speak = sendMessage

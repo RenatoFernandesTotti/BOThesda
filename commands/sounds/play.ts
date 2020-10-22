@@ -1,8 +1,8 @@
-import { Message } from 'discord.js';
+import {Message} from 'discord.js';
 import GuildAudio from 'lib/classes/GuildAudio';
 import pallete from 'lib/colorPallete';
 
-module.exports = {
+export default {
   name: 'play',
   description: 'Play music with name or URL',
   async execute(msg:Message, args:string[], shoudSayQueued = true) {

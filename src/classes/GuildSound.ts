@@ -1,19 +1,20 @@
 import { VoiceChannel, VoiceConnection } from 'discord.js';
+import { InternalSymbolName } from 'typescript';
 import ytdl from 'ytdl-core';
 import musicMetadata from '../types/musicMetadata';
 
 export default class GuildSound {
-    private songs:musicMetadata[]=[]
+     songs:musicMetadata[]=[]
 
-    private songPlaying:musicMetadata={}
+     songPlaying:musicMetadata={}
 
-    private isSBPlaying=false
+     isSBPlaying=false
 
-    private isSongPlaying=false
+     isSongPlaying=false
 
-    private voiceChannel:VoiceChannel|null=null
+     voiceChannel:VoiceChannel|null=null
 
-    private VoiceCon:VoiceConnection|null=null
+     VoiceCon:VoiceConnection|null=null
 
     membersNumber=0
 
@@ -29,10 +30,9 @@ export default class GuildSound {
 
     async dequeue(index?:number) {
       if (index) {
-        this.songs.splice(index + 1, 1);
-        return;
+        return this.songs.splice(index + 1, 1);
       }
-      this.songs.shift();
+      return this.songs.shift();
     }
 
     async stopAudio() {
@@ -44,12 +44,25 @@ export default class GuildSound {
       this.VoiceCon = null;
     }
 
+    async playSong(song:musicMetadata) {
+      if (this.isSongPlaying) {
+        this.enqueue(song);
+      }
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    async findStream(song:musicMetadata):InternalSymbolName.Reada {
+      if (song.link === undefined) return;
+      return ytdl(song.link);
+    }
+
     private async playAudio(stream:any, callback:Function) {
       if (this.VoiceCon !== null) {
         this.VoiceCon.play(stream)
           .on('finish', callback())
           .on('error', (error) => {
             global.LOGGER.error(error);
+            callback();
           });
       }
     }
@@ -64,7 +77,7 @@ export default class GuildSound {
         if (nextSong !== undefined) {
           this.songPlaying = nextSong;
           if (nextSong.link !== undefined) {
-            this.playAudio(ytdl(nextSong.link), this.shiftSong);
+            this.playAudio(this.findStream(nextSong), this.shiftSong);
           }
         }
         return;

@@ -1,88 +1,111 @@
-import { VoiceChannel, VoiceConnection } from 'discord.js';
-import { InternalSymbolName } from 'typescript';
+import {
+  DMChannel, NewsChannel, TextChannel, VoiceChannel, VoiceConnection,
+} from 'discord.js';
+import { Readable } from 'stream';
 import ytdl from 'ytdl-core';
+import BotPallete from '../lib/pallete';
+import sendEmbedMessage from '../lib/sendEmbedMessage';
 import musicMetadata from '../types/musicMetadata';
 
 export default class GuildSound {
-     songs:musicMetadata[]=[]
+      songs:musicMetadata[]=[]
 
-     songPlaying:musicMetadata={}
+      songPlaying:musicMetadata={}
 
-     isSBPlaying=false
+      isSBPlaying=false
 
-     isSongPlaying=false
+      isSongPlaying=false
 
-     voiceChannel:VoiceChannel|null=null
+      voiceChannel:VoiceChannel|null=null
 
-     VoiceCon:VoiceConnection|null=null
+      VoiceCon:VoiceConnection|null=null
 
-    membersNumber=0
+      membersNumber=0
 
-    async joinVoiceChannel(voiceChannel:VoiceChannel) {
-      this.voiceChannel = voiceChannel;
-      this.membersNumber = voiceChannel.members.size;
-      await this.connectVoiceChannel(voiceChannel);
-    }
+      textChannel:TextChannel|DMChannel|NewsChannel|null=null
 
-    async enqueue(song:musicMetadata) {
-      this.songs.push(song);
-    }
-
-    async dequeue(index?:number) {
-      if (index) {
-        return this.songs.splice(index + 1, 1);
+      async joinVoiceChannel(voiceChannel:VoiceChannel) {
+        this.voiceChannel = voiceChannel;
+        this.membersNumber = voiceChannel.members.size;
+        await this.connectVoiceChannel(voiceChannel);
       }
-      return this.songs.shift();
-    }
 
-    async stopAudio() {
-      this.VoiceCon?.dispatcher.end();
-      this.voiceChannel?.leave();
-      this.isSongPlaying = false;
-      this.isSBPlaying = false;
-      this.voiceChannel = null;
-      this.VoiceCon = null;
-    }
-
-    async playSong(song:musicMetadata) {
-      if (this.isSongPlaying) {
-        this.enqueue(song);
+      async setTextChannel(channel:TextChannel|DMChannel|NewsChannel) {
+        this.textChannel = channel;
       }
-    }
 
-    // eslint-disable-next-line class-methods-use-this
-    async findStream(song:musicMetadata):InternalSymbolName.Reada {
-      if (song.link === undefined) return;
-      return ytdl(song.link);
-    }
-
-    private async playAudio(stream:any, callback:Function) {
-      if (this.VoiceCon !== null) {
-        this.VoiceCon.play(stream)
-          .on('finish', callback())
-          .on('error', (error) => {
-            global.LOGGER.error(error);
-            callback();
-          });
+      async enqueue(song:musicMetadata) {
+        this.songs.push(song);
       }
-    }
 
-    private async connectVoiceChannel(voiceChannel:VoiceChannel) {
-      this.VoiceCon = await voiceChannel.join();
-    }
-
-    private async shiftSong() {
-      if (this.songs.length !== 0) {
-        const nextSong = this.songs.shift();
-        if (nextSong !== undefined) {
-          this.songPlaying = nextSong;
-          if (nextSong.link !== undefined) {
-            this.playAudio(this.findStream(nextSong), this.shiftSong);
-          }
+      async dequeue(index?:number) {
+        if (index) {
+          return this.songs.splice(index + 1, 1);
         }
-        return;
+        return this.songs.shift();
       }
 
-      this.stopAudio();
-    }
+      async stopAudio() {
+        if (this.VoiceCon?.dispatcher !== null) {
+          this.VoiceCon?.dispatcher.end();
+        }
+        this.voiceChannel?.leave();
+        this.isSongPlaying = false;
+        this.isSBPlaying = false;
+        this.voiceChannel = null;
+        this.VoiceCon = null;
+      }
+
+      async playSong(song:musicMetadata) {
+        if (this.isSongPlaying) {
+          this.enqueue(song);
+          return true;
+        }
+
+        this.songPlaying = song;
+        this.isSongPlaying = true;
+        this.playAudio(await this.findStream(song));
+        return false;
+      }
+
+      // eslint-disable-next-line class-methods-use-this
+      async findStream(song:musicMetadata):Promise<Readable | null> {
+        if (song.link === undefined) return null;
+        // eslint-disable-next-line no-return-await
+        return ytdl(song.link, { filter: 'audioonly', quality: 'highestaudio' });
+      }
+
+      private async playAudio(stream:any) {
+        if (this.VoiceCon !== null) {
+          this.VoiceCon.play(stream)
+            .on('finish', () => this.shiftSong(this))
+            .on('error', (error) => {
+              global.LOGGER.error(error.message);
+            });
+        }
+      }
+
+      private async connectVoiceChannel(voiceChannel:VoiceChannel) {
+        this.VoiceCon = await voiceChannel.join();
+      }
+
+      // eslint-disable-next-line class-methods-use-this
+      private async shiftSong(guild:GuildSound) {
+        if (guild.songs.length !== 0) {
+          const nextSong = guild.songs.shift();
+          if (nextSong !== undefined) {
+          // eslint-disable-next-line no-param-reassign
+            guild.songPlaying = nextSong;
+            if (nextSong.link !== undefined && guild.textChannel !== null) {
+              await sendEmbedMessage({
+                color: BotPallete.info, channel: guild.textChannel, title: `Playing song from queue: ${nextSong.title}`, message: '',
+              });
+              guild.playAudio(await guild.findStream(nextSong));
+            }
+          }
+          return;
+        }
+
+        guild.stopAudio();
+      }
 }

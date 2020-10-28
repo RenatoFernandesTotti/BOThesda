@@ -13,6 +13,7 @@ export default () => {
   global.BOT = new Client();
   global.LOGGER = logger;
   global.COMMANDS = new Map();
+  global.GUILDS = new Map();
   Object.keys(commands).forEach((key) => {
     global.COMMANDS.set(key, commands[key]);
   });

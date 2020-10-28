@@ -3,7 +3,7 @@ import embedArgs from '../types/embedArgs';
 import BotPallete from './pallete';
 
 export default async ({
-  title = 'Default Title',
+  title = '',
   color = BotPallete.info,
   message = 'Place holder',
   channel,

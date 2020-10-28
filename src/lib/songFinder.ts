@@ -1,7 +1,7 @@
-import musicMetadata from 'types/musicMetadata';
 import ytdl from 'ytdl-core';
+import musicMetadata from '../types/musicMetadata';
 
-export default async (song:string):Promise<musicMetadata | musicMetadata[]> => {
+export default async (song:string):Promise<musicMetadata[]> => {
   const metaData:musicMetadata = {};
 
   if (ytdl.validateURL(song)) {
@@ -14,7 +14,7 @@ export default async (song:string):Promise<musicMetadata | musicMetadata[]> => {
     metaData.link = song;
     metaData.title = item.videoDetails.title;
 
-    return metaData;
+    return [metaData];
   }
 
   return [];

@@ -34,8 +34,8 @@ export default class GuildSound {
         this.textChannel = channel;
       }
 
-      async enqueue(song:musicMetadata) {
-        this.songs.push(song);
+      async enqueue(song:musicMetadata|musicMetadata[]) {
+        this.songs = this.songs.concat(song);
       }
 
       async dequeue(index?:number) {
@@ -47,13 +47,17 @@ export default class GuildSound {
 
       async stopAudio() {
         if (this.VoiceCon?.dispatcher !== null) {
-          this.VoiceCon?.dispatcher.end();
+          this.VoiceCon?.dispatcher.destroy();
         }
         this.voiceChannel?.leave();
         this.isSongPlaying = false;
         this.isSBPlaying = false;
         this.voiceChannel = null;
         this.VoiceCon = null;
+      }
+
+      async skipSong(shouldSpeak:boolean = true) {
+        await this.shiftSong(this, shouldSpeak);
       }
 
       async playSong(song:musicMetadata) {
@@ -81,6 +85,7 @@ export default class GuildSound {
             .on('finish', () => this.shiftSong(this))
             .on('error', (error) => {
               global.LOGGER.error(error.message);
+              this.shiftSong(this);
             });
         }
       }
@@ -90,16 +95,19 @@ export default class GuildSound {
       }
 
       // eslint-disable-next-line class-methods-use-this
-      private async shiftSong(guild:GuildSound) {
+      private async shiftSong(guild:GuildSound, sholdSpeak:boolean = true) {
         if (guild.songs.length !== 0) {
           const nextSong = guild.songs.shift();
           if (nextSong !== undefined) {
           // eslint-disable-next-line no-param-reassign
             guild.songPlaying = nextSong;
             if (nextSong.link !== undefined && guild.textChannel !== null) {
-              await sendEmbedMessage({
-                color: BotPallete.info, channel: guild.textChannel, title: `Playing song from queue: ${nextSong.title}`, message: '',
-              });
+              if (sholdSpeak) {
+                await sendEmbedMessage({
+                  color: BotPallete.info, channel: guild.textChannel, title: `Playing song from queue: ${nextSong.title}`, message: '',
+                });
+              }
+
               guild.playAudio(await guild.findStream(nextSong));
             }
           }

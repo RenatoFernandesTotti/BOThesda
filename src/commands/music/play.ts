@@ -10,7 +10,7 @@ async function play(msg:Message, args:string[]):Promise<boolean> {
   try {
     const songString = args.join(' ');
 
-    const music = await songFinder(songString);
+    const music = await songFinder(songString, msg);
 
     if (music.length === 0) {
       await sendEmbedMessage({ color: BotPallete.error, channel: msg.channel, message: 'I did not found any songs' });
@@ -50,19 +50,25 @@ async function play(msg:Message, args:string[]):Promise<boolean> {
       await guild.joinVoiceChannel(msg.member.voice.channel);
       await guild.setTextChannel(msg.channel);
     }
+    const musicToPlay = music.shift();
 
-    if (music.length === 1) {
-      if (await guild.playSong(music[0])) {
-        await sendEmbedMessage({
-          color: BotPallete.info, channel: msg.channel, title: `Enqueued song: ${music[0].title}`, message: '',
-        });
-        return true;
-      }
+    if (musicToPlay === undefined) {
       await sendEmbedMessage({
-        color: BotPallete.info, channel: msg.channel, title: `Playing song: ${music[0].title}`, message: '',
+        color: BotPallete.error, channel: msg.channel, title: '', message: 'Something went worng, you shold not be seeing this',
       });
       return true;
     }
+
+    if (await guild.playSong(musicToPlay)) {
+      await sendEmbedMessage({
+        color: BotPallete.info, channel: msg.channel, title: `Enqueued song: ${musicToPlay.title}`, message: '',
+      });
+      return true;
+    }
+    await sendEmbedMessage({
+      color: BotPallete.info, channel: msg.channel, title: `Playing song: ${musicToPlay.title}`, message: '',
+    });
+    guild.enqueue(music);
 
     return true;
   } catch (error) {

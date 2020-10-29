@@ -24,6 +24,10 @@ export default class GuildSound {
 
       textChannel:TextChannel|DMChannel|NewsChannel|null=null
 
+      retrys=0
+
+      streamRetry:any
+
       async joinVoiceChannel(voiceChannel:VoiceChannel) {
         this.voiceChannel = voiceChannel;
         this.membersNumber = voiceChannel.members.size;
@@ -81,10 +85,17 @@ export default class GuildSound {
 
       private async playAudio(stream:any) {
         if (this.VoiceCon !== null) {
+          this.streamRetry = stream;
           this.VoiceCon.play(stream)
             .on('finish', () => this.shiftSong(this))
             .on('error', (error) => {
               global.LOGGER.error(error.message);
+              if (this.retrys < 4) {
+                this.playAudio(this.streamRetry);
+                this.retrys += 1;
+                return;
+              }
+
               this.shiftSong(this);
             });
         }
@@ -96,6 +107,7 @@ export default class GuildSound {
 
       // eslint-disable-next-line class-methods-use-this
       private async shiftSong(guild:GuildSound, sholdSpeak:boolean = true) {
+        this.retrys = 0;
         if (guild.songs.length !== 0) {
           const nextSong = guild.songs.shift();
           if (nextSong !== undefined) {

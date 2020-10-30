@@ -90,12 +90,9 @@ export default class GuildSound {
             .on('finish', () => this.shiftSong(this))
             .on('error', (error) => {
               global.LOGGER.error(error.message);
-              if (this.retrys < 4) {
-                this.playAudio(this.streamRetry);
-                this.retrys += 1;
-                return;
-              }
-
+              await sendEmbedMessage({
+                color: BotPallete.error, channel: msg.channel, title: '', message: 'An error has ocurred, skiping to next song',
+              });
               this.shiftSong(this);
             });
         }

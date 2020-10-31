@@ -2,7 +2,7 @@ import {
   DMChannel, NewsChannel, TextChannel, VoiceChannel, VoiceConnection,
 } from 'discord.js';
 import { Readable } from 'stream';
-import ytdl from 'ytdl-core';
+import ytdl from 'discord-ytdl-core';
 import BotPallete from '../lib/pallete';
 import sendEmbedMessage from '../lib/sendEmbedMessage';
 import musicMetadata from '../types/musicMetadata';
@@ -72,7 +72,8 @@ export default class GuildSound {
 
         this.songPlaying = song;
         this.isSongPlaying = true;
-        this.playAudio(await this.findStream(song));
+        const stream = await this.findStream(song);
+        this.playAudio(stream);
         return false;
       }
 
@@ -80,17 +81,34 @@ export default class GuildSound {
       async findStream(song:musicMetadata):Promise<Readable | null> {
         if (song.link === undefined) return null;
         // eslint-disable-next-line no-return-await
-        return ytdl(song.link, { filter: 'audioonly', quality: 'highestaudio' });
+        const stream = await ytdl(song.link, {
+          filter: 'audioonly',
+          quality: 'highestaudio',
+          opusEncoded: true,
+          // eslint-disable-next-line no-bitwise
+          highWaterMark: 2 << 25,
+          // eslint-disable-next-line no-bitwise
+          dlChunkSize: 2 << 25,
+
+        });
+
+        return stream;
       }
 
       private async playAudio(stream:any) {
         if (this.VoiceCon !== null) {
           this.streamRetry = stream;
-          this.VoiceCon.play(stream)
-            .on('finish', () => this.shiftSong(this))
-            .on('error', (error) => {
+          this.VoiceCon.play(stream, { type: 'opus' })
+            .on('finish', async () => {
+              global.LOGGER.info('next song');
+              await this.shiftSong(this);
+            })
+            .on('error', async (error) => {
               global.LOGGER.error(error.message);
-              this.shiftSong(this);
+              await this.shiftSong(this);
+            })
+            .on('close', () => {
+              global.LOGGER.info('stream closed');
             });
         }
       }

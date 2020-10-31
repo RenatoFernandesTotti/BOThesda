@@ -1,4 +1,4 @@
-import ytdl from 'ytdl-core';
+import ytdl from 'ytdl-core-discord';
 import ytpl from 'ytpl';
 import { Message } from 'discord.js';
 import ytsr, { YoutubeVideo } from './ytsr';

@@ -100,15 +100,11 @@ export default class GuildSound {
           this.streamRetry = stream;
           this.VoiceCon.play(stream, { type: 'opus' })
             .on('finish', async () => {
-              global.LOGGER.info('next song');
               await this.shiftSong(this);
             })
             .on('error', async (error) => {
               global.LOGGER.error(error.message);
               await this.shiftSong(this);
-            })
-            .on('close', () => {
-              global.LOGGER.info('stream closed');
             });
         }
       }

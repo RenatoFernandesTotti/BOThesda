@@ -1,21 +1,16 @@
 /* eslint-disable no-await-in-loop */
-import { Message } from 'discord.js';
-import GuildSound from '../../classes/GuildSound';
-import songFinder from '../../lib/songFinder';
+// import { Message } from 'discord.js';
+// import GuildSound from '../../classes/GuildSound';
+// import songFinder from '../../lib/songFinder';
 import BotPallete from '../../lib/pallete';
 import sendEmbedMessage from '../../lib/sendEmbedMessage';
 import Command from '../../types/commands';
 
-async function play(msg:Message, args:string[]):Promise<boolean> {
-  try {
+const command:Command = {
+  commandName: 'play',
+  description: 'Play musics!',
+  async execute(msg, args) {
     const songString = args.join(' ');
-
-    const music = await songFinder(songString, msg);
-
-    if (music.length === 0) {
-      await sendEmbedMessage({ color: BotPallete.error, channel: msg.channel, message: 'I did not found any songs' });
-      return true;
-    }
 
     if (!msg.member) {
       await sendEmbedMessage({ color: BotPallete.warn, channel: msg.channel, message: 'I could find out who you were, please try again' });
@@ -29,62 +24,9 @@ async function play(msg:Message, args:string[]):Promise<boolean> {
       await sendEmbedMessage({ color: BotPallete.warn, channel: msg.channel, message: 'I could not find your guild, please try again' });
       return true;
     }
-    let guild = global.GUILDS.get(msg.guild.id);
-
-    if (!guild) {
-      guild = new GuildSound();
-      global.GUILDS.set(msg.guild.id, guild);
-    }
-
-    if (guild.isSBPlaying) {
-      await sendEmbedMessage({ color: BotPallete.warn, channel: msg.channel, message: 'I am playing a sound from soundboard right now' });
-      return true;
-    }
-
-    if (!guild.voiceChannel) {
-      if (!msg.member.voice.channel) {
-        await sendEmbedMessage({ color: BotPallete.warn, channel: msg.channel, message: `You must be in a voice channel ${msg.author.username}` });
-        return true;
-      }
-
-      await guild.joinVoiceChannel(msg.member.voice.channel);
-      await guild.setTextChannel(msg.channel);
-    }
-    const musicToPlay = music.shift();
-
-    if (musicToPlay === undefined) {
-      await sendEmbedMessage({
-        color: BotPallete.error, channel: msg.channel, title: '', message: 'Something went worng, you shold not be seeing this',
-      });
-      return true;
-    }
-
-    if (await guild.playSong(musicToPlay)) {
-      await sendEmbedMessage({
-        color: BotPallete.info, channel: msg.channel, title: `Enqueued song: ${musicToPlay.title}`, message: '',
-      });
-      return true;
-    }
-    await sendEmbedMessage({
-      color: BotPallete.info, channel: msg.channel, title: `Playing song: ${musicToPlay.title}`, message: '',
-    });
-    guild.enqueue(music);
+    await global.PLAYER.play(msg, songString);
 
     return true;
-  } catch (error) {
-    global.LOGGER.error(error.message + error.stack);
-    return false;
-  }
-}
-
-const command:Command = {
-  commandName: 'play',
-  description: 'Play musics!',
-  async execute(msg, args) {
-    for (let index = 0; index < 4; index += 1) {
-      if (await play(msg, args)) return;
-    }
-    await sendEmbedMessage({ color: BotPallete.error, channel: msg.channel, message: 'I could not play this song, care to try again?' });
   },
 };
 

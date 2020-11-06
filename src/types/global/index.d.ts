@@ -1,7 +1,8 @@
-import GuildSound from 'classes/GuildSound';
-import guildSound from 'classes/GuildSound';
+
+import { Player } from 'discord-player';
 import { Client } from 'discord.js';
 import { Logger } from 'winston';
+import GuildSound from '../../classes/GuildSound';
 import Command from '../commands';
 
 declare global{
@@ -10,7 +11,8 @@ declare global{
             BOT:Client,
             LOGGER:Logger,
             COMMANDS:Map<string, Command>,
-            GUILDS:Map<string, GuildSound>
+            GUILDS:Map<string, GuildSound>,
+            PLAYER:Player
         }
 
     }

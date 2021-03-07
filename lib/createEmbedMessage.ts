@@ -9,7 +9,7 @@ export function createEmbedPlayMusic(message: Message, track: Track) {
   embedMessage.setDescription(
     `Música pedida: ${track.title}\n
          Por: ${track.author}\n
-         Pedida por: ${message.author.username}`
+         Pedida por: ${track.requestedBy}`
   );
 
   return embedMessage;

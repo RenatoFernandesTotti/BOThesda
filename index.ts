@@ -1,5 +1,5 @@
 import { Client, Message } from "discord.js";
-import { createLogger, format, Logform, Logger, transports } from "winston";
+import { createLogger, format, Logger, transports } from "winston";
 import { config } from "dotenv";
 import { Player } from "discord-player";
 declare global {
@@ -16,6 +16,7 @@ globalThis.LOGGER = createLogger({
     }),
   ],
 });
+
 globalThis.PLAYER = new Player(BOT, {
   ytdlRequestOptions: {
     filter: "audioonly",
@@ -31,8 +32,13 @@ BOT.on("ready", () => {
   LOGGER.info(`Logged in as ${BOT.user.tag}!`);
 });
 
-BOT.on("message", (msg: Message) => {
+BOT.on("message", async (msg: Message) => {
   try {
+    LOGGER.info({
+      origin: msg.guild.name,
+      requester: msg.author.username,
+      request: msg.content,
+    });
     if (!process.env.BOT_PREFIX) {
       LOGGER.warn("Please set the BOT_PREFIX in .env");
       return;
